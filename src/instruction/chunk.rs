@@ -1,9 +1,4 @@
-#[derive(Debug, Clone, Copy)]
-pub enum OpCode {
-    OpConstant(usize),
-    OpReturn,
-}
-pub type Value = f64;
+use super::{opcode::OpCode, types::Value};
 
 #[derive(Debug)]
 pub struct Chunk {
@@ -28,13 +23,6 @@ impl Chunk {
 
     pub fn add_constant(&mut self, value: Value) -> usize {
         self.constants.push(value);
-
         self.constants.len() - 1
     }
 }
-
-// impl Drop for Chunk {
-//     fn drop(&mut self) {
-//         println!("Dropping {:?}", self);
-//     }
-// }

@@ -1,4 +1,4 @@
-use crate::chunk::{Chunk, OpCode, Value};
+use crate::instruction::{chunk::Chunk, opcode::OpCode, types::Value};
 
 impl Chunk {
     pub fn disassemble_chunk(&self, name: &str) {
@@ -11,7 +11,7 @@ impl Chunk {
         }
     }
 
-    fn disassemble_instruction(&self, offset: usize) {
+    pub fn disassemble_instruction(&self, offset: usize) {
         print!("{:0>4} ", offset);
 
         // if chunk is on same line as previous one, print '|'
@@ -23,10 +23,15 @@ impl Chunk {
 
         let instruction = self.code[offset];
         match instruction {
-            OpCode::OpConstant(const_index) => {
-                constant_instruction("OP_CONSTANT", self.constants[const_index], const_index)
+            OpCode::Constant(const_index) => {
+                constant_instruction("OP_CONSTANT", self.constants[const_index], const_index);
             }
-            OpCode::OpReturn => simple_instruction("OP_RETURN"),
+            OpCode::Add => simple_instruction("OP_ADD"),
+            OpCode::Subtract => simple_instruction("OP_SUBTRACT"),
+            OpCode::Multiply => simple_instruction("OP_MULTIPLY"),
+            OpCode::Divide => simple_instruction("OP_DIVIDE"),
+            OpCode::Negate => simple_instruction("OP_NEGATE"),
+            OpCode::Return => simple_instruction("OP_RETURN"),
         };
     }
 }
