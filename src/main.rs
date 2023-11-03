@@ -1,9 +1,24 @@
+use std::{path::PathBuf, process::exit};
+
+use clap::Parser;
 use lox_lang::{
     instruction::{chunk::Chunk, opcode::OpCode},
     vm::VM,
 };
 
+#[derive(Parser, Debug)]
+struct Cli {
+    path: Option<PathBuf>,
+}
+
 fn main() {
+    let args = Cli::parse();
+
+    match &args.path {
+        None => repl(),
+        Some(path) => run_file(path),
+    }
+
     let mut chunk = Chunk::new();
 
     let const_index = chunk.add_constant(2.2);
@@ -23,7 +38,21 @@ fn main() {
     chunk.write(OpCode::Return, 123);
 
     // chunk.disassemble_chunk("test chunk");
+}
 
-    let vm = VM::init(chunk);
-    vm.interpret(true);
+fn repl() {}
+
+fn run_file(path: &PathBuf) {
+    let source = std::fs::read_to_string(path).expect("Couldn't read file");
+
+    // let vm = VM::init(source);
+    // let result = vm.interpret(true);
+
+    // use lox_lang::vm::InterpretResult::*;
+
+    // match result {
+    //     CompileError => exit(65),
+    //     RuntimeError => exit(70),
+    //     Ok => exit(0),
+    // };
 }
