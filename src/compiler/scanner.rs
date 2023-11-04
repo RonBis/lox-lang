@@ -8,6 +8,7 @@ pub struct Scanner<'a> {
 }
 
 impl<'a> Scanner<'a> {
+    /// Initialises the scanner with given `source` string
     pub fn init(source: &'a str) -> Scanner<'a> {
         Scanner {
             source,
@@ -17,6 +18,7 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    /// Scans individual tokens from given source
     pub fn scan_token(&mut self) -> Token {
         // self.start represents starting of each lexeme/token
         self.start = self.current;
@@ -42,7 +44,7 @@ impl<'a> Scanner<'a> {
                 b'(' => TokenType::LeftParen,
                 b')' => TokenType::RightParen,
                 b'{' => TokenType::LeftBrace,
-                b'}' => TokenType::RightParen,
+                b'}' => TokenType::RightBrace,
                 b';' => TokenType::Semicolon,
                 b',' => TokenType::Comma,
                 b'-' => TokenType::Minus,
@@ -107,7 +109,9 @@ impl<'a> Scanner<'a> {
                             _ => break,
                         }
                     }
-                    TokenType::Identifier
+
+                    let identifier = Self::make_identifier(&self.source[self.start..self.current]);
+                    identifier
                 }
 
                 // numbers
@@ -185,5 +189,80 @@ impl<'a> Scanner<'a> {
             length: self.current - self.start,
             line: self.line,
         }
+    }
+
+    /// Makes keyword or identifier from given token slice
+    fn make_identifier(slice: &str) -> TokenType {
+        // check if length is equal to expected length and matched with `match_with`
+        let check_keyword = |start: usize,
+                             expected_length: usize,
+                             match_with: &'static str,
+                             expected_keyword: TokenType| {
+            let end = start + expected_length;
+
+            if slice.len() == start + expected_length && slice[start..end] == *match_with {
+                expected_keyword
+            } else {
+                TokenType::Identifier
+            }
+        };
+
+        let slice = slice.as_bytes();
+
+        match slice[0] {
+            // keywords: and, class, else, if, nil, or, print, return, super, var, while
+            b'a' => check_keyword(1, 2, "nd", TokenType::And),
+            b'c' => check_keyword(1, 4, "lass", TokenType::Class),
+            b'e' => check_keyword(1, 3, "lse", TokenType::Else),
+            b'i' => check_keyword(1, 1, "f", TokenType::If),
+            b'n' => check_keyword(1, 2, "il", TokenType::Nil),
+            b'o' => check_keyword(1, 1, "r", TokenType::Or),
+            b'p' => check_keyword(1, 4, "rint", TokenType::Print),
+            b'r' => check_keyword(1, 5, "eturn", TokenType::Return),
+            b's' => check_keyword(1, 4, "uper", TokenType::Super),
+            b'v' => check_keyword(1, 2, "ar", TokenType::Var),
+            b'w' => check_keyword(1, 4, "hile", TokenType::While),
+
+            // branched keywords: false, for, fun
+            b'f' => {
+                if slice.len() > 1 {
+                    match slice[1] {
+                        b'a' => check_keyword(2, 3, "lse", TokenType::False),
+                        b'o' => check_keyword(2, 1, "r", TokenType::For),
+                        b'u' => check_keyword(2, 1, "n", TokenType::Fun),
+                        _ => TokenType::Identifier,
+                    }
+                } else {
+                    TokenType::Identifier
+                }
+            }
+            // branched keywords: this, true
+            b't' => {
+                if slice.len() > 1 {
+                    match slice[1] {
+                        b'h' => check_keyword(2, 2, "is", TokenType::This),
+                        b'r' => check_keyword(2, 3, "ue", TokenType::True),
+                        _ => TokenType::Identifier,
+                    }
+                } else {
+                    TokenType::Identifier
+                }
+            }
+
+            _ => TokenType::Identifier,
+        }
+    }
+}
+
+#[cfg(test)]
+mod scanner_tests {
+    use crate::compiler::{scanner::Scanner, token::TokenType};
+
+    #[test]
+    fn scan_print() {
+        let mut scanner = Scanner::init("print 1+2;");
+        let token = scanner.scan_token().token_type;
+
+        assert_eq!(token, TokenType::Print);
     }
 }

@@ -79,6 +79,6 @@ mod tests {
 
     #[test]
     fn statement() {
-        compile("print 1+2");
+        compile("fun main() {}");
     }
 }
